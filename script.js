@@ -13,22 +13,20 @@ var linkScale = d3.scale.linear()
   .range([0, 10]);
 
 var strengthScale = d3.scale.linear()
-  .domain([0, 0.02445302445302445])
+  .domain([0, 24.453024453024454])
   .range([0, 1]);
   
-function sila(d)
-{
-  return 1000 * d.count/(d.source.count * d.target.count);
-}
+var strengthScale2 = d3.scale.linear()
+  .domain([1, 24.453024453024454])
+  .range([0, 1]);
+  
 
 
 //d3.scale.lineral().domain([1,265]).range([1,20]);
 
 var force = d3.layout.force()
     .charge(-1000)
-    .linkDistance(0)
-//    .linkStrength( function(d) { 
-  //    return d.strength;})
+    .linkDistance(20)
     .size([width, height]);
 
 var svg = d3.select("body").append("svg")
@@ -38,13 +36,22 @@ var svg = d3.select("body").append("svg")
 d3.json("data_v1.json", function(error, graph) {
   if (error) throw error;
   
+  var maxVal = 0;
+  
   graph.links.forEach(function(d){
-    d.strength = sila(d);
+    d.strength = 1000 * d.count/(graph.nodes[d.source].count * graph.nodes[d.target].count);
+    if(maxVal < d.strength)
+      maxVal = d.strength;
     });
+  
+  console.log(maxVal);
+  
   
   force
       .nodes(graph.nodes)
       .links(graph.links)
+      .linkStrength( function(d) { 
+        return strengthScale(d.strength);})
       .start();
 
   var link = svg.selectAll(".link")
@@ -52,12 +59,15 @@ d3.json("data_v1.json", function(error, graph) {
     .enter().append("line")
       .attr("class", "link")
       .style("stroke-width", function(d) { 
+       // if(d.count > 5)
           return pointsScale(d.count);
+        //else
+          //return 0;
       })
       .style("opacity", function(d){
-        return strengthScale( d.count/(d.source.count * d.target.count));
-      });
-      
+        return strengthScale2(d.strength);
+      }); 
+  
   var node = svg.selectAll(".node")
       .data(graph.nodes)
     .enter().append("circle")
@@ -67,35 +77,39 @@ d3.json("data_v1.json", function(error, graph) {
         console.log("ha ha!");
         console.log(d.name);
         d.status = 2;
-        link.attr("class", function(x,i) { 
+        link.style("stroke", function(x) { 
             if(d == x.target)
             {
+              console.log(x.source);
               x.source.status = 1;
-              console.log(i);
-              return "link selected";
+              return "blacred";
             }
             else if(d == x.source)
             {
               x.target.status = 1;
-              console.log(i);
-              return "link selected";
+              //x.target.style("class","node selected");
+              return "red";
             }
             else
             {
               x.target.status = 0;
               x.source.status = 0;
+              //x.target.style("class","node unselected");
               return "link";
           }});
-        node.attr("fill", function(x) {
+        
+        node.filter(function(x){
           if(x.status == 0)
-            return "steelblue";
-          else if(x.status == 1)
-            return "green";
-          else
-            return "red";
-        })
-        
-        
+            return x;})
+            .style("class","node selected");
+        node.filter(function(x){
+          if(x.status == 1)
+            return x;})
+            .style("class","node unselected");
+        node.filter(function(x){
+          if(x.status == 2)
+            return x;})
+            .style("class","node clicked");
             
         /*node.style("fill", function(x)
         {
@@ -135,13 +149,13 @@ d3.json("data_v1.json", function(error, graph) {
   
   
   force.on("tick", function() {
-    link.attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+    link.attr("x1", function(d) { return Math.min(Math.max(d.source.x,30),height-30); })
+        .attr("y1", function(d) { return Math.min(Math.max(d.source.y,30),width-30); })
+        .attr("x2", function(d) { return Math.min(Math.max(d.target.x,30),height-30);})
+        .attr("y2", function(d) { return Math.min(Math.max(d.target.y,30),width-30);});
 
-    node.attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+    node.attr("cx", function(d) { return Math.min(Math.max(d.x,30),width-30); })
+        .attr("cy", function(d) { return Math.min(Math.max(d.y,30),height-30); });
         
     labels.attr("x",function(d) {return d.x;})
         .attr("y",function(d) { return d.y;})
