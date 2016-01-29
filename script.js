@@ -80,14 +80,13 @@ d3.json("data_v1.json", function(error, graph) {
         link.style("stroke", function(x) { 
             if(d == x.target)
             {
-              console.log(x.source);
               x.source.status = 1;
-              return "blacred";
+              console.log(x.source);
+              return "red";
             }
             else if(d == x.source)
             {
               x.target.status = 1;
-              //x.target.style("class","node selected");
               return "red";
             }
             else
@@ -95,29 +94,27 @@ d3.json("data_v1.json", function(error, graph) {
               x.target.status = 0;
               x.source.status = 0;
               //x.target.style("class","node unselected");
-              return "link";
+              return "black";
+          }})
+          .style("opacity", function(x) { 
+            if(d == x.target || d == x.source)
+            {
+              return 1;
+            }
+            else
+            {
+              return strengthScale2(x.strength);
           }});
-        
-        node.filter(function(x){
-          if(x.status == 0)
-            return x;})
-            .style("class","node selected");
-        node.filter(function(x){
-          if(x.status == 1)
-            return x;})
-            .style("class","node unselected");
-        node.filter(function(x){
-          if(x.status == 2)
-            return x;})
-            .style("class","node clicked");
             
-        /*node.style("fill", function(x)
+        node.style("fill", function(x)
         {
           if(x == d)
             return "blue";
-          else
+          else if (x.status == 0)
             return color(2);
-        });*/
+          else
+            return "green";
+        });
         
         
         /*
@@ -143,9 +140,9 @@ d3.json("data_v1.json", function(error, graph) {
       
   console.log("cokolwiek");
   node.append("title")
-      .text(function(d) { return d.name; });
+      .text(function(d) { return d.count; });
   labels.append("title")
-      .text(function(d) { return d.name; });
+      .text(function(d) { return d.count; });
   
   
   force.on("tick", function() {
@@ -157,7 +154,7 @@ d3.json("data_v1.json", function(error, graph) {
     node.attr("cx", function(d) { return Math.min(Math.max(d.x,30),width-30); })
         .attr("cy", function(d) { return Math.min(Math.max(d.y,30),height-30); });
         
-    labels.attr("x",function(d) {return d.x;})
-        .attr("y",function(d) { return d.y;})
+    labels.attr("x",function(d) { return Math.min(Math.max(d.x,30),width-30); })
+        .attr("y",function(d) { return Math.min(Math.max(d.y,30),height-30); });
   });
 });
