@@ -1,34 +1,9 @@
 /* Styles go here */
 
-.pierwiastek
-{
-  fill: steelblue;
-  stroke: black;
-  font-family: serif;
-  font-size: 24px;
-}
-
 .node
 {
   fill: steelblue;
   stroke: black;
-}
-
-.unselected
-{
-  fill:  steelblue;
-  opacity: 0.5;
-}
-
-.clicked
-{
-  fill: red;
-}
-
-.selected
-{
-  fill: red;
-  opacity: 1;
 }
 
 .link
